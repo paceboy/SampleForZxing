@@ -69,6 +69,7 @@ namespace QRCodeCreator
                 {
                     IsBusy = true;
                     IRandomAccessStream stream = new InMemoryRandomAccessStream();
+                    await AutoFocusAsync(-1, -1);
                     await _mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), stream);
 
                     var writeableBmp = await ReadBitmap(stream, ".jpg");
@@ -249,6 +250,20 @@ namespace QRCodeCreator
             DeviceInformation desiredDevice = allVideoDevices.FirstOrDefault(x => x.EnclosureLocation != null && x.EnclosureLocation.Panel == desiredPanel);
 
             return desiredDevice ?? allVideoDevices.FirstOrDefault();
+        }
+
+        public async Task AutoFocusAsync(int x = -1, int y = -1)
+        {
+            try
+            {
+                if (_mediaCapture != null && _mediaCapture.VideoDeviceController != null && _mediaCapture.VideoDeviceController.FocusControl != null)
+                    if (_mediaCapture.VideoDeviceController.FocusControl.Supported)
+                        await _mediaCapture.VideoDeviceController.FocusControl.FocusAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("AutoFocusAsync Error: {0}", ex);
+            }
         }
     }
 }
